@@ -14,7 +14,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -171,7 +170,7 @@ func (z *ZipFile) AddFileWithName(name string, filepath string) error {
 // AddAll adds all files from dir in archive, recursively.
 // Directories receive a zero-size entry in the archive, with a trailing slash in the header name, and no compression
 func (z *ZipFile) AddAll(dir string, includeCurrentFolder bool) error {
-	dir = path.Clean(dir)
+	dir = filepath.Clean(dir)
 	return addAll(dir, dir, includeCurrentFolder, func(info os.FileInfo, file io.Reader, entryName string) (err error) {
 
 		// Create a header based off of the fileinfo
@@ -343,7 +342,7 @@ func (t *TarFile) AddFileWithName(name string, filename string) error {
 // AddAll adds all files from dir in archive
 // Tar does not support directories
 func (t *TarFile) AddAll(dir string, includeCurrentFolder bool) error {
-	dir = path.Clean(dir)
+	dir = filepath.Clean(dir)
 	return addAll(dir, dir, includeCurrentFolder, func(info os.FileInfo, file io.Reader, entryName string) (err error) {
 
 		// Create a header based off of the fileinfo
@@ -398,11 +397,11 @@ func getSubDir(dir string, rootDir string, includeCurrentFolder bool) (subDir st
 	if len(subDir) > 0 && subDir[0] == os.PathSeparator {
 		subDir = subDir[1:]
 	}
-	subDir = path.Join(strings.Split(subDir, string(os.PathSeparator))...)
+	subDir = filepath.Join(strings.Split(subDir, string(os.PathSeparator))...)
 
 	if includeCurrentFolder {
 		parts := strings.Split(rootDir, string(os.PathSeparator))
-		subDir = path.Join(parts[len(parts)-1], subDir)
+		subDir = filepath.Join(parts[len(parts)-1], subDir)
 	}
 
 	return
@@ -435,7 +434,7 @@ func addAll(dir string, rootDir string, includeCurrentFolder bool, writerFunc Ar
 
 		// Write the entry into the archive
 		subDir := getSubDir(dir, rootDir, includeCurrentFolder)
-		entryName := path.Join(subDir, info.Name())
+		entryName := filepath.Join(subDir, info.Name())
 		if err := writerFunc(info, reader, entryName); err != nil {
 			if file != nil {
 				file.Close()
